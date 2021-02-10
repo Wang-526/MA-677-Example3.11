@@ -1,0 +1,48 @@
+---
+title: "MA677 Assignment"
+author: "Yuxi Wang"
+date: "2021/2/7"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+## Example 3.11 
+Suppose that ordinary aspirin has been found effective against headaches 60 percent of the time, and that a drug company claims that its new aspirin with a special headache additive is more effective. We can test this claim as follows: we call their claim the alternate hypothesis, and its negation, that the additive has no appreciable effect, the null hypothesis. Thus the null hypothesis is that p = .6, and the alternate hypothesis is that p > .6, where p is the probability that the new aspirin is effective.
+We give the aspirin to n people to take when they have a headache. We want to find a number m, called the critical value for our experiment, such that we reject the null hypothesis if at least m people are cured, and otherwise we accept it. How should we determine this critical value?
+First note that we can make two kinds of errors. The first, often called a type 1 error in statistics, is to reject the null hypothesis when in fact it is true. The second, called a type 2 error, is to accept the null hypothesis when it is false. To determine the probability of both these types of errors we introduce a function α(p), defined to be the probability that we reject the null hypothesis, where this probability is calculated under the assumption that the null hypothesis is true. In the present case, we have
+Note that α(.6) is the probability of a type 1 error, since this is the probability of a high number of successes for an ineffective additive. So for a given n we want to choose m so as to make α(.6) quite small, to reduce the likelihood of a type 1 error. But as m increases above the most probable value np = .6n, α(.6), being the upper tail of a binomial distribution, approaches 0. Thus increasing m makes a type 1 error less likely.
+Now suppose that the additive really is effective, so that p is appreciably greater than .6; say p = .8. (This alternative value of p is chosen arbitrarily; the following calculations depend on this choice.) Then choosing m well below np = .8n will increase α(.8), since now α(.8) is all but the lower tail of a binomial distribution. Indeed, if we put β(.8) = 1 − α(.8), then β(.8) gives us the probability of a type 2 error, and so decreasing m makes a type 2 error less likely.
+The manufacturer would like to guard against a type 2 error, since if such an error is made, then the test does not show that the new drug is better, when in fact it is. If the alternative value of p is chosen closer to the value of p given in the null hypothesis (in this case p = .6), then for a given test population, the value of β will increase. So, if the manufacturer’s statistician chooses an alternative value for p which is close to the value in the null hypothesis, then it will be an expensive proposition (i.e., the test population will have to be large) to reject the null hypothesis with a small value of β.
+What we hope to do then, for a given test population n, is to choose a value of m, if possible, which makes both these probabilities small. If we make a type 1 error we end up buying a lot of essentially ordinary aspirin at an inflated price; a type 2 error means we miss a bargain on a superior medication. Let us say that we want our critical number m to make each of these undesirable cases less than 5 percent probable.
+We write a program PowerCurve to plot, for n = 100 and selected values of m, the function α(p), for p ranging from .4 to 1. The result is shown in Figure 3.7. We include in our graph a box (in dotted lines) from .6 to .8, with bottom and top at heights .05 and .95. Then a value for m satisfies our requirements if and only if the graph of α enters the box from the bottom, and leaves from the top (why?—which is the type 1 and which is the type 2 criterion?). As m increases, the graph of α moves to the right. A few experiments have shown us that m = 69 is the smallest value for m that thwarts a type 1 error, while m = 73 is the largest which thwarts a type 2. So we may choose our critical value between 69 and 73. If we’re more intent on avoiding a type 1 error we favor 73, and similarly we favor 69 if we regard a type 2 error as worse. Of course, the drug company may not be happy with having as much as a 5 percent chance of an error. They might insist on having a 1 percent chance of an error. For this we would have to increase the number n of trials (see Exercise 28).
+
+
+##  Replicate the figure 
+```{r}
+n = 100
+m = c(69,73)
+p = seq(0.4, 1, 1/n)
+for (i in m) {
+  if (i == m[1]) {
+    P = data.frame(p, Cured=paste('P',i,sep=''),
+                   Power=cumsum(dbinom(i,n,p))
+                   )
+  }
+  else {
+    P = rbind(P, data.frame(p, Cured=paste('P',i,sep=''),
+                            Power=cumsum(dbinom(i,n,p))
+                            )
+              )
+  }
+}
+ggplot()+
+  geom_rect(aes(xmin = 0.6, xmax = 0.8, ymin = 0.05, ymax = 0.95), alpha = 0.5)+
+  geom_line(aes(p, Power, color = Cured), P)+
+  labs(title = 'ReplicateFigure 3.7: The power curve')
+```
+
+After replicate Figure 3.7, In the sample size with a total of 100, we define p of new drug and old are 0.8 and 0.6 respectively, and then define the bottom and top lines of the box represent the 5% type 1 error and (1-95%) type 2 error respectively, you get the grey box. Since the curves are steep enough to cross with the bottom and top lines of the box at the same time, we can change cured people m to obtain a range. And the orange curve here represents the smallest integer of $m = 69$ that starts to cross with the bottom of the box, the 5% type 1 error, and the blue one indicates the largest integer of $m = 73$ that can still cross with the top of the box ,the 1-95% type 2 error.And between 69 and 73 are suitable to choose.
